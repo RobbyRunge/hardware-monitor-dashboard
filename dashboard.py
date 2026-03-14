@@ -9,7 +9,7 @@ from flask_socketio import SocketIO
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "hw-monitor-secret"
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # ──────────────────────────────────────────
 #  CPU / System helpers
@@ -66,19 +66,25 @@ def get_cpu_data():
 # ──────────────────────────────────────────
 
 def find_nvme_device():
-    """Return first available nvme device path."""
-    for dev in ["/dev/nvme0", "/dev/nvme1", "/dev/nvme0n1"]:
-        try:
-            result = subprocess.run(
-                ["nvme", "list", "-o", "json"],
-                capture_output=True, text=True, timeout=3
-            )
-            data = json.loads(result.stdout)
-            devices = data.get("Devices", [])
-            if devices:
-                return devices[0].get("DevicePath", "/dev/nvme0")
-        except Exception:
-            pass
+    """Return controller path of the 990 Pro (or first available NVMe)."""
+    try:
+        result = subprocess.run(
+            ["nvme", "list", "-o", "json"],
+            capture_output=True, text=True, timeout=3
+        )
+        data = json.loads(result.stdout)
+        devices = data.get("Devices", [])
+        # Prefer 990 Pro, fall back to first device
+        target = next(
+            (d for d in devices if "990" in d.get("ModelNumber", "")),
+            devices[0] if devices else None
+        )
+        if target:
+            # Convert namespace path (/dev/nvme1n1) to controller (/dev/nvme1)
+            path = target["DevicePath"]
+            return re.sub(r"n\d+$", "", path)
+    except Exception:
+        pass
     return "/dev/nvme0"
 
 
@@ -100,11 +106,11 @@ def get_nvme_data():
     }
     try:
         result = subprocess.run(
-            ["nvme", "smart-log", NVME_DEV, "-o", "json"],
+            ["sudo", "nvme", "smart-log", NVME_DEV, "-o", "json"],
             capture_output=True, text=True, timeout=3
         )
         if result.returncode != 0:
-            data["error"] = result.stderr.strip() or "nvme command failed"
+            data["error"] = result.stderr.strip() or result.stdout.strip() or "nvme command failed"
             return data
 
         raw = json.loads(result.stdout)
@@ -178,4 +184,4 @@ if __name__ == "__main__":
     t = threading.Thread(target=broadcast_loop, daemon=True)
     t.start()
     print("Dashboard running at http://localhost:5000")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=False)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=False, allow_unsafe_werkzeug=True)

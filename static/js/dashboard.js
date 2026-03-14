@@ -12,6 +12,7 @@ socket.on("disconnect", () => {
 });
 
 socket.on("hw_update", (data) => {
+  console.log(data);
   if (data.error) {
     console.error("Server error:", data.error);
     return;
