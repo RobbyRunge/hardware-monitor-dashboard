@@ -30,8 +30,12 @@
   <main>
 
     <!-- ── CPU SECTION ─────────────────────────────── -->
-    <section class="section">
-      <h2 class="section-title"><span class="accent">01</span> PROCESSOR</h2>
+    <section class="section collapsed">
+      <h2 class="section-title" onclick="toggleSection(this)">
+        <span class="accent">01</span> PROCESSOR
+        <span class="chevron">▼</span>
+      </h2>
+      <div class="section-body">
 
       <div class="card-row">
 
@@ -80,11 +84,16 @@
         <canvas id="chart-cpu" height="80"></canvas>
       </div>
 
+      </div><!-- /.section-body -->
     </section>
 
     <!-- ── NVME SECTION ────────────────────────────── -->
-    <section class="section">
-      <h2 class="section-title"><span class="accent">02</span> STORAGE</h2>
+    <section class="section collapsed">
+      <h2 class="section-title" onclick="toggleSection(this)">
+        <span class="accent">02</span> STORAGE
+        <span class="chevron">▼</span>
+      </h2>
+      <div class="section-body">
 
       <div class="card-row">
 
@@ -142,6 +151,7 @@
       <!-- Error message -->
       <div id="nvme-error" class="error-box" style="display:none"></div>
 
+      </div><!-- /.section-body -->
     </section>
 
   </main>
