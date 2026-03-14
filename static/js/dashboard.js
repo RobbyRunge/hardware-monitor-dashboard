@@ -229,3 +229,8 @@ const chartIO = new Chart(document.getElementById("chart-io").getContext("2d"), 
     ],
   },
 });
+
+// ── Collapsible sections ───────────────────────────
+function toggleSection(titleEl) {
+  titleEl.closest('.section').classList.toggle('collapsed');
+}
