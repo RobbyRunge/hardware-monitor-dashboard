@@ -82,9 +82,76 @@
 
     </section>
 
+    <!-- ── RAM SECTION ─────────────────────────────── -->
+    <section class="section">
+      <h2 class="section-title"><span class="accent">02</span> MEMORY</h2>
+
+      <div class="card-row">
+
+        <div class="card card--big">
+          <div class="card-label">RAM USED</div>
+          <div class="bignum" id="ram2-used">—</div>
+          <div class="bignum-unit">GB</div>
+        </div>
+
+        <div class="card card--big">
+          <div class="card-label">RAM TOTAL</div>
+          <div class="bignum" id="ram2-total">—</div>
+          <div class="bignum-unit">GB</div>
+        </div>
+
+        <div class="card card--big">
+          <div class="card-label">USAGE</div>
+          <div class="bignum" id="ram2-percent">—</div>
+          <div class="bignum-unit">%</div>
+          <div class="bar-wrap">
+            <div class="bar bar--mem" id="bar-ram2"></div>
+          </div>
+        </div>
+
+        <div class="card card--big">
+          <div class="card-label">SWAP USED</div>
+          <div class="bignum" id="ram2-swap">—</div>
+          <div class="bignum-unit">GB</div>
+        </div>
+
+      </div>
+
+      <!-- Hardware info row -->
+      <div class="card-row">
+        <div class="card">
+          <div class="card-label">TYPE</div>
+          <div class="stat-value" id="ram-type">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">SPEED</div>
+          <div class="stat-value" id="ram-speed">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">SLOTS USED</div>
+          <div class="stat-value" id="ram-slots">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">MANUFACTURER</div>
+          <div class="stat-value" id="ram-manufacturer">—</div>
+          <div class="card-sub" id="ram-part">—</div>
+        </div>
+      </div>
+
+      <!-- RAM history chart -->
+      <div class="card">
+        <div class="card-label">RAM HISTORY (60s)</div>
+        <canvas id="chart-ram" height="80"></canvas>
+      </div>
+
+      <!-- dmidecode error -->
+      <div id="ram-error" class="error-box" style="display:none"></div>
+
+    </section>
+
     <!-- ── NVME SECTION ────────────────────────────── -->
     <section class="section">
-      <h2 class="section-title"><span class="accent">02</span> STORAGE</h2>
+      <h2 class="section-title"><span class="accent">03</span> STORAGE</h2>
 
       <div class="card-row">
 

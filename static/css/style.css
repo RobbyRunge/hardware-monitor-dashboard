@@ -191,6 +191,13 @@ main {
   margin-top: 0.25rem;
 }
 
+.card-sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+}
+
 /* ── Progress bars ────────────────────────────────── */
 .bar-wrap {
   background: var(--bg3);
@@ -209,6 +216,7 @@ main {
   box-shadow: 0 0 8px rgba(0,229,255,0.6);
 }
 .bar--ram { background: var(--accent2); box-shadow: 0 0 8px rgba(255,107,53,0.5); }
+.bar--mem { background: #b36aff;       box-shadow: 0 0 8px rgba(179,106,255,0.5); }
 
 /* ── Per-core grid ────────────────────────────────── */
 .core-grid {

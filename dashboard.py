@@ -1,6 +1,8 @@
 import subprocess
 import json
 import re
+import struct
+import glob
 import threading
 import time
 import psutil
@@ -91,6 +93,135 @@ def find_nvme_device():
 NVME_DEV = find_nvme_device()
 
 
+# ──────────────────────────────────────────
+#  RAM helpers
+# ──────────────────────────────────────────
+
+_ram_hw_cache: dict | None = None
+_ram_hw_last: float = 0.0
+
+
+_DRAM_TYPES = {0x12: "DDR5", 0x0C: "DDR4", 0x0B: "DDR3", 0x0F: "LPDDR5"}
+
+# JEDEC JEP106 Bank 1 manufacturer bytes (bits 0-6 = code, bit 7 = odd parity)
+_JEDEC_MFR = {
+    0x2C: "Micron",
+    0xAD: "SK Hynix",
+    0xCE: "Samsung",
+    0x9E: "Kingston",
+    0x43: "Ramaxel",
+    0x04: "Fujitsu",
+}
+
+
+def get_ram_hardware():
+    """Read RAM hardware info from SPD EEPROM via sysfs — no sudo needed. Cached 60 s."""
+    global _ram_hw_cache, _ram_hw_last
+    now = time.time()
+    if _ram_hw_cache is not None and now - _ram_hw_last < 60:
+        return _ram_hw_cache
+
+    result: dict = {
+        "slots": [],
+        "type": None,
+        "speed_mhz": None,
+        "slots_used": None,
+        "slots_total": None,
+        "manufacturer": None,
+        "part_number": None,
+        "error": None,
+    }
+    try:
+        # Total slots from DMI entries (readable without sudo)
+        dmi_entries = glob.glob("/sys/firmware/dmi/entries/17-*")
+        result["slots_total"] = len(dmi_entries) if dmi_entries else None
+
+        # SPD EEPROM files — filter to spd* drivers only (spd5118, eeprom_spd …)
+        filled = []
+        for eeprom_path in sorted(glob.glob("/sys/bus/i2c/devices/*/eeprom")):
+            dev_dir = eeprom_path.rsplit("/", 1)[0]
+            try:
+                name = open(dev_dir + "/name").read().strip()
+            except OSError:
+                continue
+            if "spd" not in name.lower():
+                continue
+            try:
+                data = open(eeprom_path, "rb").read(1024)
+            except OSError:
+                continue
+            if len(data) < 0x16:
+                continue
+
+            dram_type = _DRAM_TYPES.get(data[0x02], f"0x{data[0x02]:02x}")
+
+            # EXPO profile speed (AMD OC profile) — signature "EXPO" + 0x0E bytes offset
+            expo_idx = data.find(b"EXPO")
+            if expo_idx >= 0 and len(data) >= expo_idx + 0x10:
+                tck_ps = struct.unpack_from("<H", data, expo_idx + 0x0E)[0]
+            else:
+                # Fallback: JEDEC tCKAVGmin — DDR5 SPD bytes 0x14-0x15 (little-endian)
+                tck_ps = struct.unpack_from("<H", data, 0x14)[0]
+
+            speed = round(2_000_000 / tck_ps / 100) * 100 if tck_ps else None
+
+            # Manufacturer: scan JEDEC code at known offsets (0x1FE, 0x229 on DDR5)
+            manufacturer = None
+            for off in (0x141, 0x140, 0x1FE, 0x229):
+                if off < len(data):
+                    manufacturer = _JEDEC_MFR.get(data[off])
+                    if manufacturer:
+                        break
+
+            # Part number: first ASCII string starting with alnum and containing a letter
+            part_number = None
+            for m in re.finditer(rb'[A-Za-z0-9][A-Za-z0-9 \-_.]{5,}', data):
+                s = m.group().decode("ascii").strip()
+                if any(c.isalpha() for c in s):
+                    part_number = s
+                    break
+
+            filled.append({
+                "type": dram_type,
+                "speed_mt": speed,
+                "manufacturer": manufacturer,
+                "part_number": part_number,
+                "dev": dev_dir.split("/")[-1],
+            })
+
+        result["slots_used"] = len(filled)
+        if filled:
+            result["type"] = filled[0]["type"]
+            result["speed_mhz"] = filled[0]["speed_mt"]
+            result["manufacturer"] = filled[0]["manufacturer"]
+            result["part_number"] = filled[0]["part_number"]
+            result["slots"] = filled
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    _ram_hw_cache = result
+    _ram_hw_last = now
+    return result
+
+
+def get_ram_data():
+    """Combined RAM usage + hardware info."""
+    mem = psutil.virtual_memory()
+    swap = psutil.swap_memory()
+    hw = get_ram_hardware()
+    return {
+        "used_gb": round(mem.used / 1024**3, 1),
+        "total_gb": round(mem.total / 1024**3, 1),
+        "available_gb": round(mem.available / 1024**3, 1),
+        "percent": mem.percent,
+        "swap_used_gb": round(swap.used / 1024**3, 1),
+        "swap_total_gb": round(swap.total / 1024**3, 1),
+        "swap_percent": swap.percent,
+        "hardware": hw,
+    }
+
+
 def get_nvme_data():
     """Read SMART log from NVMe via nvme-cli."""
     data = {
@@ -163,7 +294,8 @@ def broadcast_loop():
             cpu = get_cpu_data()
             nvme = get_nvme_data()
             io = get_disk_io()
-            payload = {"cpu": cpu, "nvme": nvme, "io": io}
+            ram = get_ram_data()
+            payload = {"cpu": cpu, "nvme": nvme, "io": io, "ram": ram}
             socketio.emit("hw_update", payload)
         except Exception as e:
             socketio.emit("hw_update", {"error": str(e)})
