@@ -77,9 +77,9 @@ function updateCPU(cpu) {
   setBar("bar-cpu", cpu.usage_total);
   setBar("bar-ram", cpu.ram_percent);
 
-  // RAM
-  document.getElementById("ram-used").textContent =
-    cpu.ram_used != null ? cpu.ram_used.toFixed(1) : "—";
+  // Processes
+  document.getElementById("processes").textContent =
+    cpu.process_count != null ? cpu.process_count : "—";
 
   // Per-core
   renderCores(cpu.usage_per_core);
