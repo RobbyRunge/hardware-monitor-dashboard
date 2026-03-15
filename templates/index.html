@@ -88,8 +88,12 @@
     </section>
 
     <!-- ── RAM SECTION ─────────────────────────────── -->
-    <section class="section">
-      <h2 class="section-title"><span class="accent">02</span> MEMORY</h2>
+    <section class="section collapsed">
+      <h2 class="section-title" onclick="toggleSection(this)">
+        <span class="accent">02</span> MEMORY
+        <span class="chevron">▼</span>
+      </h2>
+      <div class="section-body">
 
       <div class="card-row">
 
@@ -152,12 +156,13 @@
       <!-- dmidecode error -->
       <div id="ram-error" class="error-box" style="display:none"></div>
 
+      </div><!-- /.section-body --> 
     </section>
 
     <!-- ── NVME SECTION ────────────────────────────── -->
     <section class="section collapsed">
       <h2 class="section-title" onclick="toggleSection(this)">
-        <span class="accent">02</span> STORAGE
+        <span class="accent">03</span> STORAGE
         <span class="chevron">▼</span>
       </h2>
       <div class="section-body">
