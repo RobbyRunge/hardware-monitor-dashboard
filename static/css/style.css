@@ -120,11 +120,43 @@ main {
   color: var(--text-dim);
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+
+.section-title:hover { color: var(--text); }
 
 .section-title .accent {
   color: var(--accent);
   margin-right: 0.75rem;
+}
+
+.chevron {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  transition: transform 0.3s ease;
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  max-height: 2000px;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+.section.collapsed .section-body {
+  max-height: 0;
+  opacity: 0;
+}
+
+.section.collapsed .chevron {
+  transform: rotate(-90deg);
 }
 
 /* ── Cards ────────────────────────────────────────── */
