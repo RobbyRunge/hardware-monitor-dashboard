@@ -18,7 +18,7 @@
       <span class="logo-mark">⬡</span>
       <div>
         <h1>SYSTEM MONITOR</h1>
-        <p class="subtitle">AMD Ryzen 7 7800X3D &nbsp;·&nbsp; Samsung 990 Pro</p>
+        <p class="subtitle">AMD Ryzen 7 7800X3D &nbsp;·&nbsp; SK Hynix DDR5-6000 &nbsp;·&nbsp; Samsung 990 Pro</p>
       </div>
     </div>
     <div class="header-right">
@@ -85,6 +85,73 @@
       </div>
 
       </div><!-- /.section-body -->
+    </section>
+
+    <!-- ── RAM SECTION ─────────────────────────────── -->
+    <section class="section">
+      <h2 class="section-title"><span class="accent">02</span> MEMORY</h2>
+
+      <div class="card-row">
+
+        <div class="card card--big">
+          <div class="card-label">RAM USED</div>
+          <div class="bignum" id="ram2-used">—</div>
+          <div class="bignum-unit">GB</div>
+        </div>
+
+        <div class="card card--big">
+          <div class="card-label">RAM TOTAL</div>
+          <div class="bignum" id="ram2-total">—</div>
+          <div class="bignum-unit">GB</div>
+        </div>
+
+        <div class="card card--big">
+          <div class="card-label">USAGE</div>
+          <div class="bignum" id="ram2-percent">—</div>
+          <div class="bignum-unit">%</div>
+          <div class="bar-wrap">
+            <div class="bar bar--mem" id="bar-ram2"></div>
+          </div>
+        </div>
+
+        <div class="card card--big">
+          <div class="card-label">SWAP USED</div>
+          <div class="bignum" id="ram2-swap">—</div>
+          <div class="bignum-unit">GB</div>
+        </div>
+
+      </div>
+
+      <!-- Hardware info row -->
+      <div class="card-row">
+        <div class="card">
+          <div class="card-label">TYPE</div>
+          <div class="stat-value" id="ram-type">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">SPEED</div>
+          <div class="stat-value" id="ram-speed">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">SLOTS USED</div>
+          <div class="stat-value" id="ram-slots">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">MANUFACTURER</div>
+          <div class="stat-value" id="ram-manufacturer">—</div>
+          <div class="card-sub" id="ram-part">—</div>
+        </div>
+      </div>
+
+      <!-- RAM history chart -->
+      <div class="card">
+        <div class="card-label">RAM HISTORY (60s)</div>
+        <canvas id="chart-ram" height="80"></canvas>
+      </div>
+
+      <!-- dmidecode error -->
+      <div id="ram-error" class="error-box" style="display:none"></div>
+
     </section>
 
     <!-- ── NVME SECTION ────────────────────────────── -->

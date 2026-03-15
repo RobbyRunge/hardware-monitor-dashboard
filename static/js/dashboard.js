@@ -19,6 +19,7 @@ socket.on("hw_update", (data) => {
   }
   updateCPU(data.cpu);
   updateNVMe(data.nvme, data.io);
+  updateRAM(data.ram);
   pushHistory(data);
   document.getElementById("last-update").textContent =
     "Last update: " + new Date().toLocaleTimeString("de-DE");
@@ -26,14 +27,17 @@ socket.on("hw_update", (data) => {
 
 // ── History buffers ───────────────────────────────
 const MAX_POINTS = 60;
-const cpuHistory  = Array(MAX_POINTS).fill(0);
-const readHistory = Array(MAX_POINTS).fill(0);
+const cpuHistory   = Array(MAX_POINTS).fill(0);
+const ramHistory   = Array(MAX_POINTS).fill(0);
+const readHistory  = Array(MAX_POINTS).fill(0);
 const writeHistory = Array(MAX_POINTS).fill(0);
-const labels      = Array.from({ length: MAX_POINTS }, (_, i) => `${MAX_POINTS - i}s`).reverse();
+const labels       = Array.from({ length: MAX_POINTS }, (_, i) => `${MAX_POINTS - i}s`).reverse();
 
 function pushHistory(data) {
   cpuHistory.push(data.cpu?.usage_total ?? 0);
   cpuHistory.shift();
+  ramHistory.push(data.ram?.percent ?? 0);
+  ramHistory.shift();
   readHistory.push(data.io?.read_mbs ?? 0);
   readHistory.shift();
   writeHistory.push(data.io?.write_mbs ?? 0);
@@ -41,6 +45,9 @@ function pushHistory(data) {
 
   chartCPU.data.datasets[0].data = [...cpuHistory];
   chartCPU.update("none");
+
+  chartRAM.data.datasets[0].data = [...ramHistory];
+  chartRAM.update("none");
 
   chartIO.data.datasets[0].data = [...readHistory];
   chartIO.data.datasets[1].data = [...writeHistory];
@@ -104,6 +111,39 @@ function renderCores(cores) {
     }
     if (label) label.textContent = `${Math.round(pct)}%`;
   });
+}
+
+// ── RAM updater ───────────────────────────────────
+function updateRAM(ram) {
+  if (!ram) return;
+
+  setNum("ram2-used",    ram.used_gb,    1);
+  setNum("ram2-total",   ram.total_gb,   1);
+  setNum("ram2-percent", ram.percent,    1);
+  setNum("ram2-swap",    ram.swap_used_gb, 1);
+  setBar("bar-ram2",     ram.percent);
+
+  const hw = ram.hardware;
+  const errBox = document.getElementById("ram-error");
+  if (hw?.error) {
+    errBox.style.display = "block";
+    errBox.textContent = "⚠ " + hw.error;
+  } else {
+    errBox.style.display = "none";
+  }
+
+  if (hw && !hw.error) {
+    document.getElementById("ram-type").textContent =
+      hw.type ?? "—";
+    document.getElementById("ram-speed").textContent =
+      hw.speed_mhz != null ? `${hw.speed_mhz} MT/s` : "—";
+    document.getElementById("ram-slots").textContent =
+      hw.slots_used != null ? `${hw.slots_used} / ${hw.slots_total}` : "—";
+    document.getElementById("ram-manufacturer").textContent =
+      hw.manufacturer ?? "—";
+    document.getElementById("ram-part").textContent =
+      hw.part_number ?? "—";
+  }
 }
 
 // ── NVMe updater ──────────────────────────────────
@@ -199,6 +239,25 @@ const chartCPU = new Chart(document.getElementById("chart-cpu").getContext("2d")
 });
 chartCPU.options.scales.y.max = 100;
 chartCPU.update();
+
+// RAM chart
+const chartRAM = new Chart(document.getElementById("chart-ram").getContext("2d"), {
+  ...JSON.parse(JSON.stringify(chartDefaults)),
+  data: {
+    labels,
+    datasets: [{
+      data: [...ramHistory],
+      borderColor: "#b36aff",
+      backgroundColor: "rgba(179,106,255,0.07)",
+      borderWidth: 1.5,
+      fill: true,
+      tension: 0.3,
+      pointRadius: 0,
+    }],
+  },
+});
+chartRAM.options.scales.y.max = 100;
+chartRAM.update();
 
 // I/O chart
 const chartIO = new Chart(document.getElementById("chart-io").getContext("2d"), {
