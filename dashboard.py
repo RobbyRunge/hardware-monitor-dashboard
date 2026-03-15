@@ -60,6 +60,7 @@ def get_cpu_data():
         "ram_percent": mem.percent,
         "swap_used": round(swap.used / 1024**3, 1),
         "swap_percent": swap.percent,
+        "process_count": len(psutil.pids()),
     }
 
 
