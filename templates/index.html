@@ -22,7 +22,8 @@
             <span class="logo-mark">⬡</span>
             <div>
                 <h1>SYSTEM MONITOR</h1>
-                <p class="subtitle">AMD Ryzen 7 7800X3D &nbsp;·&nbsp; SK Hynix DDR5-6000 &nbsp;·&nbsp; Samsung 990 Pro
+                <p class="subtitle">AMD Ryzen 7 7800X3D &nbsp;·&nbsp; SK Hynix DDR5-6000 &nbsp; ·&nbsp; AMD Radeon RX
+                    7800 XT &nbsp; ·&nbsp; Samsung 990 Pro
                 </p>
             </div>
         </div>
@@ -160,10 +161,85 @@
             </div><!-- /.section-body -->
         </section>
 
+        <!-- ── GPU SECTION ─────────────────────────────── -->
+        <section class="section collapsed">
+            <h2 class="section-title" onclick="toggleSection(this)">
+                <span class="accent">03</span> GPU
+                <span class="chevron">▼</span>
+            </h2>
+            <div class="section-body">
+
+                <div class="card-row">
+
+                    <div class="card card--big">
+                        <div class="card-label">GPU LOAD</div>
+                        <div class="bignum" id="gpu-load">—</div>
+                        <div class="bignum-unit">%</div>
+                        <div class="bar-wrap">
+                            <div class="bar bar--gpu" id="bar-gpu"></div>
+                        </div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">TEMPERATURE</div>
+                        <div class="bignum" id="gpu-temp">—</div>
+                        <div class="bignum-unit">°C</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">VRAM USED</div>
+                        <div class="bignum" id="gpu-vram-used">—</div>
+                        <div class="bignum-unit">GB</div>
+                        <div class="bar-wrap">
+                            <div class="bar bar--gpu" id="bar-vram"></div>
+                        </div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">POWER DRAW</div>
+                        <div class="bignum" id="gpu-power">—</div>
+                        <div class="bignum-unit">W</div>
+                    </div>
+
+                </div>
+
+                <div class="card-row">
+                    <div class="card">
+                        <div class="card-label">JUNCTION TEMP</div>
+                        <div class="stat-value" id="gpu-temp-junction">—</div>
+                        <div class="card-sub">°C hotspot</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">MEM TEMP</div>
+                        <div class="stat-value" id="gpu-temp-mem">—</div>
+                        <div class="card-sub">°C VRAM</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">GPU CLOCK</div>
+                        <div class="stat-value" id="gpu-clock">—</div>
+                        <div class="card-sub">MHz</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">MEM CLOCK</div>
+                        <div class="stat-value" id="gpu-mem-clock">—</div>
+                        <div class="card-sub">MHz</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">GPU LOAD HISTORY (60s)</div>
+                    <canvas id="chart-gpu" height="80"></canvas>
+                </div>
+
+                <div id="gpu-error" class="error-box" style="display:none"></div>
+
+            </div><!-- /.section-body -->
+        </section>
+
         <!-- ── NVME SECTION ────────────────────────────── -->
         <section class="section collapsed">
             <h2 class="section-title" onclick="toggleSection(this)">
-                <span class="accent">03</span> STORAGE 990 PRO
+                <span class="accent">04</span> STORAGE 990 PRO
                 <span class="chevron">▼</span>
             </h2>
             <div class="section-body">

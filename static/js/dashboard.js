@@ -19,6 +19,7 @@ socket.on("hw_update", (data) => {
     updateCPU(data.cpu);
     updateNVMe(data.nvme, data.io);
     updateRAM(data.ram);
+    updateGPU(data.gpu);
     pushHistory(data);
     document.getElementById("last-update").textContent =
         "Last update: " + new Date().toLocaleTimeString("de-DE");
@@ -30,6 +31,7 @@ const cpuHistory = Array(MAX_POINTS).fill(0);
 const ramHistory = Array(MAX_POINTS).fill(0);
 const readHistory = Array(MAX_POINTS).fill(0);
 const writeHistory = Array(MAX_POINTS).fill(0);
+const gpuHistory = Array(MAX_POINTS).fill(0);
 const labels = Array.from({ length: MAX_POINTS }, (_, i) => `${MAX_POINTS - i}s`).reverse();
 
 function pushHistory(data) {
@@ -42,6 +44,9 @@ function pushHistory(data) {
     writeHistory.push(data.io?.write_mbs ?? 0);
     writeHistory.shift();
 
+    gpuHistory.push(data.gpu?.gpu_busy_percent ?? 0);
+    gpuHistory.shift();
+
     chartCPU.data.datasets[0].data = [...cpuHistory];
     chartCPU.update("none");
 
@@ -51,6 +56,9 @@ function pushHistory(data) {
     chartIO.data.datasets[0].data = [...readHistory];
     chartIO.data.datasets[1].data = [...writeHistory];
     chartIO.update("none");
+
+    chartGPU.data.datasets[0].data = [...gpuHistory];
+    chartGPU.update("none");
 }
 
 // ── CPU updater ───────────────────────────────────
@@ -143,6 +151,41 @@ function updateRAM(ram) {
         document.getElementById("ram-part").textContent =
             hw.part_number ?? "—";
     }
+}
+
+// ── GPU updater ───────────────────────────────────
+function updateGPU(gpu) {
+    if (!gpu) return;
+
+    const errBox = document.getElementById("gpu-error");
+    if (gpu.error) {
+        errBox.style.display = "block";
+        errBox.textContent = "⚠ " + gpu.error;
+    } else {
+        errBox.style.display = "none";
+    }
+
+    const tempEl = document.getElementById("gpu-temp");
+    tempEl.textContent = gpu.temp_edge != null ? gpu.temp_edge.toFixed(0) : "—";
+    tempEl.style.color = tempColor(gpu.temp_edge);
+    tempEl.style.textShadow = `0 0 20px ${tempColor(gpu.temp_edge)}55`;
+
+    setNum("gpu-load", gpu.gpu_busy_percent, 0);
+    setBar("bar-gpu", gpu.gpu_busy_percent);
+
+    setNum("gpu-vram-used", gpu.vram_used_gb, 1);
+    if (gpu.vram_total_gb) setBar("bar-vram", (gpu.vram_used_gb / gpu.vram_total_gb) * 100);
+
+    setNum("gpu-power", gpu.power_w, 0);
+
+    document.getElementById("gpu-temp-junction").textContent =
+        gpu.temp_junction != null ? gpu.temp_junction.toFixed(0) : "—";
+    document.getElementById("gpu-temp-mem").textContent =
+        gpu.temp_mem != null ? gpu.temp_mem.toFixed(0) : "—";
+    document.getElementById("gpu-clock").textContent =
+        gpu.gpu_clock_mhz != null ? Math.round(gpu.gpu_clock_mhz) : "—";
+    document.getElementById("gpu-mem-clock").textContent =
+        gpu.mem_clock_mhz != null ? Math.round(gpu.mem_clock_mhz) : "—";
 }
 
 // ── NVMe updater ──────────────────────────────────
@@ -287,6 +330,25 @@ const chartIO = new Chart(document.getElementById("chart-io").getContext("2d"), 
         ],
     },
 });
+
+// GPU chart
+const chartGPU = new Chart(document.getElementById("chart-gpu").getContext("2d"), {
+    ...JSON.parse(JSON.stringify(chartDefaults)),
+    data: {
+        labels,
+        datasets: [{
+            data: [...gpuHistory],
+            borderColor: "#ed1c24",
+            backgroundColor: "rgba(237,28,36,0.07)",
+            borderWidth: 1.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+        }],
+    },
+});
+chartGPU.options.scales.y.max = 100;
+chartGPU.update();
 
 // ── Collapsible sections ───────────────────────────
 function toggleSection(titleEl) {
