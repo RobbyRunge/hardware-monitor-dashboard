@@ -270,6 +270,96 @@ def get_nvme_data():
     return data
 
 
+def get_gpu_data():
+    """Read AMD GPU metrics from sysfs (amdgpu driver) — no root required."""
+    data = {
+        "temp_edge": None,
+        "temp_junction": None,
+        "temp_mem": None,
+        "gpu_busy_percent": None,
+        "vram_used_gb": None,
+        "vram_total_gb": None,
+        "gpu_clock_mhz": None,
+        "mem_clock_mhz": None,
+        "power_w": None,
+        "fan_rpm": None,
+        "voltage_mv": None,
+        "error": None,
+    }
+
+    def read(path):
+        try:
+            return open(path).read().strip()
+        except OSError:
+            return None
+
+    try:
+        # Find the primary GPU card (boot_vga = 1)
+        card_path = None
+        for card in sorted(glob.glob("/sys/class/drm/card*/device")):
+            if read(card + "/boot_vga") == "1":
+                card_path = card
+                break
+        if card_path is None:
+            data["error"] = "No primary AMD GPU found"
+            return data
+
+        # Find hwmon directory with name "amdgpu"
+        hwmon_path = None
+        for hwmon in sorted(glob.glob(card_path + "/hwmon/hwmon*")):
+            if read(hwmon + "/name") == "amdgpu":
+                hwmon_path = hwmon
+                break
+        if hwmon_path is None:
+            data["error"] = "amdgpu hwmon not found"
+            return data
+
+        # Temperatures (milli-°C → °C)
+        for key, filename in [("temp_edge", "temp1_input"), ("temp_junction", "temp2_input"), ("temp_mem", "temp3_input")]:
+            val = read(hwmon_path + "/" + filename)
+            if val:
+                data[key] = round(int(val) / 1000, 1)
+
+        # GPU utilization (direct %)
+        val = read(card_path + "/gpu_busy_percent")
+        if val:
+            data["gpu_busy_percent"] = int(val)
+
+        # VRAM (bytes → GB)
+        used = read(card_path + "/mem_info_vram_used")
+        total = read(card_path + "/mem_info_vram_total")
+        if used:
+            data["vram_used_gb"] = round(int(used) / 1024**3, 2)
+        if total:
+            data["vram_total_gb"] = round(int(total) / 1024**3, 1)
+
+        # Clocks (Hz → MHz)
+        val = read(hwmon_path + "/freq1_input")
+        if val:
+            data["gpu_clock_mhz"] = round(int(val) / 1e6, 0)
+        val = read(hwmon_path + "/freq2_input")
+        if val:
+            data["mem_clock_mhz"] = round(int(val) / 1e6, 0)
+
+        # Power (micro-watt → watt)
+        val = read(hwmon_path + "/power1_average")
+        if val:
+            data["power_w"] = round(int(val) / 1e6, 1)
+
+        # Fan RPM & voltage
+        val = read(hwmon_path + "/fan1_input")
+        if val:
+            data["fan_rpm"] = int(val)
+        val = read(hwmon_path + "/in0_input")
+        if val:
+            data["voltage_mv"] = int(val)
+
+    except Exception as e:
+        data["error"] = str(e)
+
+    return data
+
+
 def get_disk_io():
     """Disk read/write speed (bytes/s) via psutil."""
     io1 = psutil.disk_io_counters()
@@ -296,7 +386,8 @@ def broadcast_loop():
             nvme = get_nvme_data()
             io = get_disk_io()
             ram = get_ram_data()
-            payload = {"cpu": cpu, "nvme": nvme, "io": io, "ram": ram}
+            gpu = get_gpu_data()
+            payload = {"cpu": cpu, "nvme": nvme, "io": io, "ram": ram, "gpu": gpu}
             socketio.emit("hw_update", payload)
         except Exception as e:
             socketio.emit("hw_update", {"error": str(e)})

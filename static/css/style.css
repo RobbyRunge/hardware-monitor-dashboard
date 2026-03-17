@@ -298,6 +298,11 @@ main {
     box-shadow: 0 0 8px rgba(179, 106, 255, 0.5);
 }
 
+.bar--gpu {
+    background: #ed1c24;
+    box-shadow: 0 0 8px rgba(237, 28, 36, 0.5);
+}
+
 /* ── Per-core grid ────────────────────────────────── */
 .core-grid {
     display: grid;
