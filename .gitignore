@@ -20,3 +20,7 @@ Thumbs.db
 
 # Claude
 .claude/
+
+# Dashboard
+start-dashboard.sh
+dashboard.log
