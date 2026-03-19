@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HW Monitor — Ryzen 7800X3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="static/css/style.css" />
+</head>
+
+<body>
+
+    <header>
+        <div class="header-left">
+            <span class="logo-mark">⬡</span>
+            <div>
+                <h1>SYSTEM MONITOR</h1>
+                <p class="subtitle">AMD Ryzen 7 7800X3D &nbsp;·&nbsp; SK Hynix DDR5-6000 &nbsp; ·&nbsp; AMD Radeon RX
+                    7800 XT &nbsp; ·&nbsp; Samsung 990 Pro
+                </p>
+            </div>
+        </div>
+        <div class="header-right">
+            <span id="status-dot" class="dot dot--connecting"></span>
+            <span id="status-text">Loading…</span>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- ── CPU SECTION ─────────────────────────────── -->
+        <section class="section collapsed">
+            <h2 class="section-title" onclick="toggleSection(this)">
+                <span class="accent">01</span> PROCESSOR
+                <span class="chevron">▼</span>
+            </h2>
+            <div class="section-body">
+
+                <div class="card-row">
+
+                    <div class="card card--big">
+                        <div class="card-label">CPU LOAD</div>
+                        <div class="bignum" id="cpu-total">—</div>
+                        <div class="bignum-unit">%</div>
+                        <div class="bar-wrap">
+                            <div class="bar" id="bar-cpu"></div>
+                        </div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">TEMPERATURE</div>
+                        <div class="bignum" id="cpu-temp">—</div>
+                        <div class="bignum-unit">°C</div>
+                        <div class="temp-indicator" id="temp-ring"></div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">FREQUENCY</div>
+                        <div class="bignum" id="cpu-freq">—</div>
+                        <div class="bignum-unit">MHz</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">PROCESSES</div>
+                        <div class="bignum" id="processes">—</div>
+                    </div>
+
+                </div>
+
+                <!-- Per-core bars -->
+                <div class="card">
+                    <div class="card-label">PER CORE USAGE</div>
+                    <div id="core-grid" class="core-grid"></div>
+                </div>
+
+                <!-- CPU history chart -->
+                <div class="card">
+                    <div class="card-label">LOAD HISTORY (60s)</div>
+                    <canvas id="chart-cpu" height="80"></canvas>
+                </div>
+
+            </div><!-- /.section-body -->
+        </section>
+
+        <!-- ── RAM SECTION ─────────────────────────────── -->
+        <section class="section collapsed">
+            <h2 class="section-title" onclick="toggleSection(this)">
+                <span class="accent">02</span> MEMORY
+                <span class="chevron">▼</span>
+            </h2>
+            <div class="section-body">
+
+                <div class="card-row">
+
+                    <div class="card card--big">
+                        <div class="card-label">RAM USED</div>
+                        <div class="bignum" id="ram2-used">—</div>
+                        <div class="bignum-unit">GB</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">RAM TOTAL</div>
+                        <div class="bignum" id="ram2-total">—</div>
+                        <div class="bignum-unit">GB</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">USAGE</div>
+                        <div class="bignum" id="ram2-percent">—</div>
+                        <div class="bignum-unit">%</div>
+                        <div class="bar-wrap">
+                            <div class="bar bar--mem" id="bar-ram2"></div>
+                        </div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">SWAP USED</div>
+                        <div class="bignum" id="ram2-swap">—</div>
+                        <div class="bignum-unit">GB</div>
+                    </div>
+
+                </div>
+
+                <!-- Hardware info row -->
+                <div class="card-row">
+                    <div class="card">
+                        <div class="card-label">TYPE</div>
+                        <div class="stat-value" id="ram-type">—</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">SPEED</div>
+                        <div class="stat-value" id="ram-speed">—</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">SLOTS USED</div>
+                        <div class="stat-value" id="ram-slots">—</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">MANUFACTURER</div>
+                        <div class="stat-value" id="ram-manufacturer">—</div>
+                        <div class="card-sub" id="ram-part">—</div>
+                    </div>
+                </div>
+
+                <!-- RAM history chart -->
+                <div class="card">
+                    <div class="card-label">RAM HISTORY (60s)</div>
+                    <canvas id="chart-ram" height="80"></canvas>
+                </div>
+
+                <div id="ram-error" class="error-box" style="display:none"></div>
+
+            </div><!-- /.section-body -->
+        </section>
+
+        <!-- ── GPU SECTION ─────────────────────────────── -->
+        <section class="section collapsed">
+            <h2 class="section-title" onclick="toggleSection(this)">
+                <span class="accent">03</span> GPU
+                <span class="chevron">▼</span>
+            </h2>
+            <div class="section-body">
+
+                <div class="card-row">
+
+                    <div class="card card--big">
+                        <div class="card-label">GPU LOAD</div>
+                        <div class="bignum" id="gpu-load">—</div>
+                        <div class="bignum-unit">%</div>
+                        <div class="bar-wrap">
+                            <div class="bar bar--gpu" id="bar-gpu"></div>
+                        </div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">TEMPERATURE</div>
+                        <div class="bignum" id="gpu-temp">—</div>
+                        <div class="bignum-unit">°C</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">VRAM USED</div>
+                        <div class="bignum" id="gpu-vram-used">—</div>
+                        <div class="bignum-unit">GB</div>
+                        <div class="bar-wrap">
+                            <div class="bar bar--gpu" id="bar-vram"></div>
+                        </div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">POWER DRAW</div>
+                        <div class="bignum" id="gpu-power">—</div>
+                        <div class="bignum-unit">W</div>
+                    </div>
+
+                </div>
+
+                <div class="card-row">
+                    <div class="card">
+                        <div class="card-label">JUNCTION TEMP</div>
+                        <div class="stat-value" id="gpu-temp-junction">—</div>
+                        <div class="card-sub">°C hotspot</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">MEM TEMP</div>
+                        <div class="stat-value" id="gpu-temp-mem">—</div>
+                        <div class="card-sub">°C VRAM</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">GPU CLOCK</div>
+                        <div class="stat-value" id="gpu-clock">—</div>
+                        <div class="card-sub">MHz</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">MEM CLOCK</div>
+                        <div class="stat-value" id="gpu-mem-clock">—</div>
+                        <div class="card-sub">MHz</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">GPU LOAD HISTORY (60s)</div>
+                    <canvas id="chart-gpu" height="80"></canvas>
+                </div>
+
+                <div id="gpu-error" class="error-box" style="display:none"></div>
+
+            </div><!-- /.section-body -->
+        </section>
+
+        <!-- ── NVME SECTION ────────────────────────────── -->
+        <section class="section collapsed">
+            <h2 class="section-title" onclick="toggleSection(this)">
+                <span class="accent">04</span> STORAGE 990 PRO
+                <span class="chevron">▼</span>
+            </h2>
+            <div class="section-body">
+
+                <div class="card-row">
+
+                    <div class="card card--big">
+                        <div class="card-label">SSD TEMP</div>
+                        <div class="bignum" id="nvme-temp">—</div>
+                        <div class="bignum-unit">°C</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">HEALTH</div>
+                        <div class="bignum" id="nvme-health">—</div>
+                        <div class="bignum-unit">%</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">READ</div>
+                        <div class="bignum" id="io-read">—</div>
+                        <div class="bignum-unit">MB/s</div>
+                    </div>
+
+                    <div class="card card--big">
+                        <div class="card-label">WRITE</div>
+                        <div class="bignum" id="io-write">—</div>
+                        <div class="bignum-unit">MB/s</div>
+                    </div>
+
+                </div>
+
+                <div class="card-row">
+                    <div class="card">
+                        <div class="card-label">TOTAL DATA READ</div>
+                        <div class="stat-value" id="nvme-read-total">—</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">TOTAL DATA WRITTEN</div>
+                        <div class="stat-value" id="nvme-write-total">—</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">POWER-ON HOURS</div>
+                        <div class="stat-value" id="nvme-poh">—</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">UNSAFE SHUTDOWNS</div>
+                        <div class="stat-value" id="nvme-shutdowns">—</div>
+                    </div>
+                </div>
+
+                <!-- I/O chart -->
+                <div class="card">
+                    <div class="card-label">DISK I/O HISTORY (60s)</div>
+                    <canvas id="chart-io" height="80"></canvas>
+                </div>
+
+                <div id="nvme-error" class="error-box" style="display:none"></div>
+
+            </div><!-- /.section-body -->
+        </section>
+
+    </main>
+
+    <footer>
+        <span>HW Monitor v1.0</span>
+        <span id="last-update">—</span>
+    </footer>
+
+    <script src="static/js/dashboard.js"></script>
+</body>
+
+</html>
