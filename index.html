@@ -307,6 +307,22 @@
         <span id="last-update">—</span>
     </footer>
 
+    <!-- ── Demo Overlay ─────────────────────────────── -->
+    <div id="demo-overlay" class="demo-overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+        <div class="demo-overlay__box">
+            <div class="demo-overlay__icon">⚠</div>
+            <h2 class="demo-overlay__title" id="overlay-title">SIMULIERTE DATEN</h2>
+            <p class="demo-overlay__text">
+                Dieses Dashboard zeigt <strong>keine echten Systemwerte</strong>.<br>
+                Alle angezeigten Messdaten werden durch einen Zufallsgenerator
+                simuliert und dienen ausschließlich zur Demonstration des Layouts.
+            </p>
+            <button class="demo-overlay__btn" id="overlay-close" onclick="closeDemoOverlay()">
+                Verstanden — Dashboard öffnen
+            </button>
+        </div>
+    </div>
+
     <script src="static/js/dashboard.js"></script>
 </body>
 

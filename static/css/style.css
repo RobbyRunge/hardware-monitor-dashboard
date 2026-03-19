@@ -364,6 +364,76 @@ canvas {
     border-radius: 4px;
 }
 
+/* ── Demo Overlay ─────────────────────────────────── */
+.demo-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(9, 12, 15, 0.88);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.demo-overlay__box {
+    background: var(--bg2);
+    border: 1px solid var(--warn);
+    border-radius: 6px;
+    max-width: 480px;
+    width: 100%;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255, 204, 0, 0.12);
+}
+
+.demo-overlay__icon {
+    font-size: 2.4rem;
+    color: var(--warn);
+    filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.5));
+    margin-bottom: 1rem;
+}
+
+.demo-overlay__title {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    color: var(--warn);
+    margin-bottom: 1.25rem;
+}
+
+.demo-overlay__text {
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+}
+
+.demo-overlay__text strong {
+    color: var(--warn);
+    font-weight: 600;
+}
+
+.demo-overlay__btn {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    border-radius: 3px;
+    padding: 0.75rem 1.75rem;
+    cursor: pointer;
+    transition: opacity 0.15s, box-shadow 0.15s;
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+}
+
+.demo-overlay__btn:hover {
+    opacity: 0.85;
+    box-shadow: 0 0 22px rgba(0, 229, 255, 0.55);
+}
+
 /* ── Footer ───────────────────────────────────────── */
 footer {
     display: flex;
